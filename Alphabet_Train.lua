@@ -19,18 +19,18 @@ alpha = tonumber(opt.alpha)
 print('Learning Rate is set to : ' .. alpha)
 theta = tonumber(opt.theta)
 print('Activation Theta is set to : ' .. theta)
-epoch = 0
+epoch = 1
 --loading training data
-loaded = torch.load('data.dat')
+loaded = torch.load('TrainData.dat')
 trainData = {
-    data = loaded.x ,
-    label = loaded.y ,
-    size = function() return (#trainData.data) end
+    data = loaded.X ,
+    label = loaded.T ,
+    size = function() return (#trainData.data)[1] end
 }
 
 m = trainData.size()     --Number of train data
-n = trainData.data[1]:size(1)    --Number of features
-k = trainData.label[1]:size(1)   --Number of Outputs
+n = trainData.data:size(2)    --Number of features
+k = trainData.label:size(2)   --Number of Outputs
 
 w = torch.Tensor(n, k):fill(0)    --matrix of weights
 out = torch.Tensor(m,k):fill(0)   --output matrix
@@ -39,13 +39,7 @@ delta_w = torch.Tensor(n, k):fill(0)    --difference of weights
 flaq = true
 
 function normal() do
-    for i = 1, m do
-        for j = 1, k do
-            for l = 1, n do
-                out[i][j] = out[i][j] + (trainData.data[i][l] * w[l][j])
-            end
-        end
-    end
+  out = trainData.data * w
     for i = 1, m do
         for j = 1, k do
             if out[i][j] > theta then
@@ -63,6 +57,8 @@ end
 temp = 0
 
 while flaq do
+  flaq = false
+  print('epoch : ' .. epoch)
     for f = 1, m do    --loop for Number of train data
         normal()
         for i = 1, n do    --loop for Number of Features
@@ -71,18 +67,18 @@ while flaq do
                         temp = w[i][j] + (alpha * (trainData.data[f][i] * trainData.label[f][j]))
                         delta_w[i][j] = temp - w[i][j]
                         w[i][j] = temp
+                        flaq = true
                     else
                       delta_w[i][j] = 0
                     end
                 end
         end
     end
-    s = torch.sum(delta_w)
-    if s == 0 then
-        flaq = false
-    end
+    --s = torch.sum(delta_w)
+    --if s == 0 then
+        --flaq = false
+    --end
     epoch = epoch + 1
-    print('epoch : ' .. epoch)
 end
 if opt.save then
   torch.save('weight.dat', w)

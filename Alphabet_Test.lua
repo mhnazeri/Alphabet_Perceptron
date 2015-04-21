@@ -1,11 +1,11 @@
 --Train Program
 require 'torch'
 
-loaded = torch.load('data.dat')
+loaded = torch.load('TrainData.dat')
 trainData = {
-    data = loaded.x ,
-    label = loaded.y ,
-    size = function() return (#trainData.data) end
+    data = loaded.X ,
+    label = loaded.T ,
+    size = function() return (#trainData.data)[1] end
 }
 
 if not opt then
@@ -16,26 +16,24 @@ if not opt then
   cmd:text()
   cmd:text('Options:')
   cmd:option('-theta', 0.2, 'Theta for activation function defualt is 0.2')
-  cmd:option('-train', 1, 'Number of trainset to use as testset')
+  cmd:option('-test', 1, 'Number of trainset to use as testset')
   cmd:text()
   opt = cmd:parse(arg or {})
 end
 
 theta = opt.theta
 m = trainData.size()     --Number of train data
-n = trainData.data[1]:size(1)    --Number of features
-k = trainData.label[1]:size(1)   --Number of Outputs
+n = trainData.data:size(2)    --Number of features
+k = trainData.label:size(2)   --Number of Outputs
 
 w = torch.Tensor(n, k):fill(0)    --matrix of weights
 w = torch.load('weight.dat')
 o = torch.Tensor(m,k):fill(0)
-for i = 1, m do
-    for j = 1, k do
-        for l = 1, n do
-            o[i][j] = o[i][j] + (trainData.data[i][l] * w[l][j])
-        end
-    end
-end
+
+
+
+o = trainData.data * w
+
 for i = 1, m do
     for j = 1, k do
         if o[i][j] > theta then
@@ -47,6 +45,13 @@ for i = 1, m do
         end
     end
 end
-num = opt.train
-print('Feeding trainset number ' .. num .. ' as testset')
-print(o[num])
+num = opt.test
+if num == 0 then
+  print(o)
+else
+  print('Feeding trainset number ' .. num .. ' as testset')
+  print(o[num])
+end
+--y = torch.Tensor(label)
+--E = y - o
+--print(E)
