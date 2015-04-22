@@ -16,7 +16,7 @@ if not opt then
   cmd:text()
   cmd:text('Options:')
   cmd:option('-theta', 0.2, 'Theta for activation function defualt is 0.2')
-  cmd:option('-test', 1, 'Number of trainset to use as testset')
+  cmd:option('-test', 0, 'Number of trainset to use as testset')
   cmd:text()
   opt = cmd:parse(arg or {})
 end
