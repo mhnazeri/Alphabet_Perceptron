@@ -1,13 +1,6 @@
 --Train Program
 require 'torch'
 
-loaded = torch.load('TrainData.dat')
-trainData = {
-    data = loaded.X ,
-    label = loaded.T ,
-    size = function() return (#trainData.data)[1] end
-}
-
 if not opt then
   print ('==> Processing Options')
   cmd = torch.CmdLine()
@@ -17,14 +10,27 @@ if not opt then
   cmd:text('Options:')
   cmd:option('-theta', 0.2, 'Theta for activation function defualt is 0.2')
   cmd:option('-test', 0, 'Number of trainset to use as testset')
+  cmd:option('-dataset', 'test' , 'Number of trainset to use as testset')
   cmd:text()
   opt = cmd:parse(arg or {})
 end
 
+if opt.dataset == 'test' then
+  loaded = torch.load('TestData.dat')
+else
+  loaded = torch.load('TrainData.dat')
+end
+
+testData = {
+    data = loaded.X ,
+    label = loaded.T ,
+    size = function() return (#testData.data)[1] end
+}
+
 theta = opt.theta
-m = trainData.size()     --Number of train data
-n = trainData.data:size(2)    --Number of features
-k = trainData.label:size(2)   --Number of Outputs
+m = testData.size()     --Number of train data
+n = testData.data:size(2)    --Number of features
+k = testData.label:size(2)   --Number of Outputs
 
 w = torch.Tensor(n, k):fill(0)    --matrix of weights
 w = torch.load('weight.dat')
@@ -32,7 +38,7 @@ o = torch.Tensor(m,k):fill(0)
 
 
 
-o = trainData.data * w
+o = testData.data * w
 
 for i = 1, m do
     for j = 1, k do
@@ -52,6 +58,9 @@ else
   print('Feeding trainset number ' .. num .. ' as testset')
   print(o[num])
 end
---y = torch.Tensor(label)
---E = y - o
---print(E)
+
+E = testData.label - o
+E:pow(2)
+e = torch.sum(E)
+e = e % 100
+print('The Error Rate is : ' .. e .. '%')
